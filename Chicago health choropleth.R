@@ -2,7 +2,6 @@
 library(maptools)
 library(ggplot2)
 library(ggmap)
-print("test")
 
 health_choro <- function(column_name, zoom_level,CA_map = get_CA_map(),
         base_map = ggmap(get_googlemap(center = "Chicago", zoom = zoom_level))){
@@ -23,7 +22,7 @@ health_choro <- function(column_name, zoom_level,CA_map = get_CA_map(),
                         ".png"), width = 960, height = 960, type = "cairo")
   plot(output_map)
   dev.off()
-  print(paste0("Map of ", column_name, " made with zoom level of ",
+  print(paste0("I made a map of ", column_name, "with a zoom level of ",
                toString(zoom_level)))
 }
 
@@ -31,19 +30,15 @@ make_all_choropleths <- function(zoom_level){
   # remove all old plots
   clear_plots_folder()
   
-  # get health data and the names of columns in it
-  chi_health <- read.csv("Health by CA.csv", fileEncoding = "UTF-8-BOM")
-  columns <- names(chi_health)[-(1:2)]
-  
-  # read community area shape file, turn it into a data frame, and merge the
-  # health data into it
-  CA_map <- readShapePoly(fn = "CA_map/CA_map")
-  CA_map <- fortify(CA_map, region = 'area_numbe')
-  CA_map <- merge(CA_map, chi_health, by.x = "id", by.y = names(chi_health)[1])
-  CA_map <- CA_map[order(CA_map$order),]
+  # get the merged map and health data and get the names of the columns
+  # excluding columns 1 through 8 because those are map data and CA names
+  CA_map <- get_CA_map()
+  columns <- names(CA_map)[-(1:8)]
   
   # get base map from google
   base_map <- ggmap(get_googlemap(center = "Chicago", zoom = zoom_level))
+  
+  # make choropleth of each column
   lapply(columns, function (x) health_choro(x, zoom_level, CA_map = CA_map,
                                             base_map = base_map))
 }
