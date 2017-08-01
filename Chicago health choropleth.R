@@ -2,6 +2,7 @@
 library(maptools)
 library(ggplot2)
 library(ggmap)
+print("test")
 
 health_choro <- function(column_name, zoom_level,CA_map = get_CA_map(),
         base_map = ggmap(get_googlemap(center = "Chicago", zoom = zoom_level))){
