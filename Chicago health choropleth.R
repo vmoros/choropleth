@@ -4,7 +4,8 @@ library(ggplot2)
 library(ggmap)
 
 health_choro <- function(column_name, zoom_level,CA_map = get_CA_map(),
-        base_map = ggmap(get_googlemap(center = "Chicago", zoom = zoom_level))){
+        base_map = ggmap(get_googlemap(center = "Chicago", zoom = zoom_level)),
+        save = T, show = F, low_color, high_color){
   # make copies of maps to avoid changing the originals
   CA_map_copy <- CA_map
   output_map <- base_map
@@ -16,14 +17,28 @@ health_choro <- function(column_name, zoom_level,CA_map = get_CA_map(),
   # add borders to the community areas
   output_map <- output_map + geom_path(aes(x=long, y=lat, group=group),
                                              data = CA_map, color = 'black')
-
+  
+  # change colors of map if colors are provided
+  if (hasArg(low_color) && hasArg(high_color)){
+    output_map <- output_map + scale_fill_gradient(low = low_color,
+                                                   high = high_color)
+  }
+  
+  
+  if (save){
   # save plot to png file
   png(filename = paste0("plots/", column_name, " zoom ", toString(zoom_level),
                         ".png"), width = 960, height = 960, type = "cairo")
   plot(output_map)
   dev.off()
-  print(paste0("I made a map of ", column_name, "with a zoom level of ",
+  print(paste0("I saved a map of ", column_name, "with a zoom level of ",
                toString(zoom_level)))
+  }
+  
+  if (show){
+    output_map
+    print(paste0("Plotting map of ", toString(column_name)))
+  }
 }
 
 make_all_choropleths <- function(zoom_level){
@@ -57,16 +72,23 @@ get_CA_map <- function(){
 }
 
 clear_plots_folder <- function(){
+  if (!dir.exists("plots")){
+    dir.create("plots")
+  } else {
   file.remove(list.files("plots", full.names = T))
+  }
 }
 
 # to do: 
-# only pull base map once
-# make parameter to specify if map should be shown or saved
-# make ability to make map on demand
-# change colors
-# change direction of coloring
 # put legend over water in map
-# research get_googlemap function vs get_map
 # think of way to overlay two maps to compare them
+
+
+# done:
+# only pull base map once
+# make ability to make map on demand
 # put on github
+# research get_googlemap function vs get_map
+# change colors
+# make parameters to specify if map should be shown or saved
+# change direction of coloring
